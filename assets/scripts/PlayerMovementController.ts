@@ -1,91 +1,54 @@
-import { _decorator, Component, Node, SkeletalAnimation, Vec3, input, Input, KeyCode, EventKeyboard } from 'cc';
+import { _decorator, Component, Node, Vec3, EventTouch, input, Input, Vec2 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerMovementController')
 export class PlayerMovementController extends Component {
     @property
-    moveSpeed: number = 200; // Скорость передвижения персонажа
+    moveSpeed: number = 10; // Скорость передвижения персонажа
 
-    private anim: SkeletalAnimation | null = null;
-    private isMoving: boolean = false;
-    private currentAnimation: string = 'Armature.001|Armature.001|IDLE.animation';
-
-    private direction: Vec3 = new Vec3(0, 0, 0);
-    private velocity: Vec3 = new Vec3(0, 0, 0); // Скорость движения
+    private direction: Vec3 = new Vec3(0, 0, 0); // Направление движения
+    private startTouchPosition: Vec3 | null = null; // Начальная позиция касания
 
     start() {
-        // Получаем компонент SkeletalAnimation
-        this.anim = this.node.getComponent(SkeletalAnimation);
-
-        // Устанавливаем анимацию по умолчанию как IDLE
-        if (this.anim) {
-            this.anim.play(this.currentAnimation);
-        }
-
-        // Настройка событий для управления с клавиатуры
-        input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
-        input.on(Input.EventType.KEY_UP, this.onKeyUp, this);
+        // Подписываемся на события касания экрана
+        input.on(Input.EventType.TOUCH_START, this.onTouchStart, this);
+        input.on(Input.EventType.TOUCH_MOVE, this.onTouchMove, this);
+        input.on(Input.EventType.TOUCH_END, this.onTouchEnd, this);
     }
 
     update(deltaTime: number) {
-        // Если есть движение, переключаем на анимацию RUN
-        if (this.velocity.length() > 0) {
-            if (!this.isMoving) {
-                this.playAnimation('Armature.001|Armature.001|RUN.animation');
-                this.isMoving = true;
-            }
-        } else {
-            // Если движения нет, переключаем на анимацию IDLE
-            if (this.isMoving) {
-                this.playAnimation('Armature.001|Armature.001|IDLE.animation');
-                this.isMoving = false;
-            }
-        }
-
-        // Движение персонажа
-        let moveOffset = this.velocity.clone().multiplyScalar(this.moveSpeed * deltaTime);
-        this.node.setPosition(this.node.position.add(moveOffset));
-    }
-
-    // Обработчик нажатия клавиш
-    private onKeyDown(event: EventKeyboard) {
-        // Управление движением по оси X и Y
-        switch (event.keyCode) {
-            case KeyCode.KEY_A:
-                this.velocity.x = -1;
-                break;
-            case KeyCode.KEY_D:
-                this.velocity.x = 1;
-                break;
-            case KeyCode.KEY_W:
-                this.velocity.y = 1;
-                break;
-            case KeyCode.KEY_S:
-                this.velocity.y = -1;
-                break;
+        // Движение персонажа в направлении касания
+        if (this.direction.length() > 0) {
+            let moveOffset = this.direction.clone().normalize().multiplyScalar(this.moveSpeed * deltaTime);
+            this.node.setPosition(this.node.position.add(moveOffset));
         }
     }
 
-    // Обработчик отпускания клавиш
-    private onKeyUp(event: EventKeyboard) {
-        // Останавливаем движение по соответствующим осям при отпускании клавиш
-        switch (event.keyCode) {
-            case KeyCode.KEY_A:
-            case KeyCode.KEY_D:
-                this.velocity.x = 0;
-                break;
-            case KeyCode.KEY_W:
-            case KeyCode.KEY_S:
-                this.velocity.y = 0;
-                break;
-        }
+    private onTouchStart(event: EventTouch) {
+        console.log("OnTouchStart");
+        const touchPos = event.getLocation(); // Получаем Vec2
+        this.startTouchPosition = new Vec3(touchPos.x, 0, touchPos.y); // Сохраняем начальную позицию касания
+        this.updateDirection(touchPos); // Обновляем направление
     }
 
-    // Метод для проигрывания анимаций
-    private playAnimation(animationName: string) {
-        if (this.currentAnimation !== animationName && this.anim) {
-            this.currentAnimation = animationName;
-            this.anim.play(this.currentAnimation);
+    private onTouchMove(event: EventTouch) {
+        console.log("OnTouchMove");
+        const touchPos = event.getLocation(); // Получаем Vec2
+        this.updateDirection(touchPos); // Обновляем направление
+    }
+
+    private onTouchEnd(event: EventTouch) {
+        this.direction.set(0, 0, 0); // Остановка движения
+        this.startTouchPosition = null; // Сбрасываем начальную позицию
+    }
+
+    private updateDirection(touchPos: Vec2) {
+        if (this.startTouchPosition) {
+            // Преобразование Vec2 в Vec3, устанавливая Y на 0
+            const worldPos = new Vec3(touchPos.x, 0, touchPos.y);
+
+            // Вычисляем направление относительно начальной позиции касания
+            this.direction.set(worldPos.x, 0, worldPos.z).subtract(this.startTouchPosition).normalize();
         }
     }
 }
