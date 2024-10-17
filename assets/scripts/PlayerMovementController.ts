@@ -90,9 +90,14 @@ export class PlayerMovementController extends Component {
         // Получаем направление движения
         const forward = this.direction.clone().normalize();
         if (forward.length() > 0) {
-            // Вычисляем угол поворота
+            // Вычисляем угол поворота с учётом корректировки
             const angle = Math.atan2(forward.z, forward.x) * (180 / Math.PI); // Угол в градусах
-            this.node.setRotationFromEuler(0, -angle, 0); // Поворачиваем персонажа (Y-угол)
+    
+            const correctionAngle = 90; // Корректирующий угол (если модель повернута на 45 градусов)
+            
+            // Поворачиваем персонажа (Y-угол), добавляя корректирующий угол
+            this.node.setRotationFromEuler(0, -angle + correctionAngle, 0);
         }
     }
+    
 }
