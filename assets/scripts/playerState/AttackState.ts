@@ -3,7 +3,6 @@ import { PlayerMovementController } from '../PlayerMovementController';
 import { PlayerAttackController } from '../PlayerAttackController';
 import { Vec3 } from 'cc';
 import { MapObjects } from '../MapObjects';
-import { ResourceController } from '../ResourceController';
 
 export class AttackState extends PlayerState {
     private attackController: PlayerAttackController;
@@ -19,12 +18,10 @@ export class AttackState extends PlayerState {
     }
 
     update(deltaTime: number) {
-        // Если атака завершена, переходим в состояние idle
         if (!this.attackController.IsAttacking) {
             this.player.changeState('idle');
         }
 
-        // Дополнительные проверки для прекращения атаки
         if (this.shouldStopAttacking()) {
             this.player.changeState('idle');
         }
@@ -57,12 +54,11 @@ export class AttackState extends PlayerState {
         });
 
         if (anyDestroyed) {
-            this.attackController.stopAttack(); // Останавливаем атаку, если кто-то уничтожен
+            this.attackController.stopAttack();
         }
     }
 
     private shouldStopAttacking(): boolean {
-        // Логика для прекращения атаки
-        return false; // Замените это на вашу логику
+        return false; 
     }
 }

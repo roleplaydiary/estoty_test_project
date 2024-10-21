@@ -1,11 +1,11 @@
-import { _decorator, Component, Input, input } from 'cc';
+import { _decorator, Component} from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerAttackController')
 export class PlayerAttackController extends Component {
     private weaponLevel = 1;
     private isAttacking = false;
-    private attackCooldown = 1.5;
+    private attackCooldown = 2.2;
 
     public get IsAttacking(): boolean {
         return this.isAttacking;
