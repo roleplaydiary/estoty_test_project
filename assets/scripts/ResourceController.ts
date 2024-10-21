@@ -41,4 +41,8 @@ export class ResourceController extends Component {
             this.animationController.playHitAnimation(this.node);
         }
     }
+
+    public getResourceHealth(): number{
+        return this.resourceHealth;
+    }
 }

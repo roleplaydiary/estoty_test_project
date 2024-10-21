@@ -31,29 +31,59 @@ export class AttackState extends PlayerState {
         const attackRadius = 2;
         const playerPosition = this.player.node.worldPosition;
 
+        // Наносим урон всем ресурсам в радиусе атаки
+        const anyDestroyed = this.attackAllNearbyResources(playerPosition, attackRadius);
+
+        if (anyDestroyed) {
+            // Если остались живые ресурсы, продолжаем атаку
+            if (this.hasAliveTargets(playerPosition, attackRadius)) {
+                this.player.animationController?.playAnimation('Armature.001|Armature.001|AXE');
+            } else {
+                // Если все ресурсы уничтожены, останавливаем атаку
+                this.attackController.stopAttack();
+            }
+        } else {
+            // Если ни один ресурс не был атакован, повторяем анимацию
+            this.player.animationController?.playAnimation('Armature.001|Armature.001|AXE');
+        }
+    }
+
+    private attackAllNearbyResources(playerPosition: Vec3, attackRadius: number): boolean {
         const allObjects = MapObjects.instance.getMapObjects();
         let anyDestroyed = false;
 
-        allObjects.forEach((targetNode) => {
+        for (const targetNode of allObjects) {
             if (targetNode.node !== this.player.node) {
                 const distance = Vec3.distance(playerPosition, targetNode.node.worldPosition);
                 if (distance <= attackRadius) {
-                    const resourceController = targetNode;
+                    const resourceController = targetNode; // Убедитесь, что это правильный тип
                     if (resourceController) {
                         const isDestroyed = resourceController.resourceAttack(this.attackController.getWeaponLevel());
                         if (isDestroyed) {
-                            anyDestroyed = true;
+                            anyDestroyed = true; // Если хотя бы один ресурс уничтожен
                         }
                     }
                 }
             }
-        });
-
-        if (!anyDestroyed) {
-            // Если остались живые ресурсы, проигрываем анимацию снова
-            this.player.animationController?.playAnimation('Armature.001|Armature.001|AXE');
-        } else {
-            this.attackController.stopAttack(); // Если уничтожены, прекращаем атаку
         }
+
+        return anyDestroyed; // Возвращаем, был ли разрушен хотя бы один ресурс
+    }
+
+    private hasAliveTargets(playerPosition: Vec3, attackRadius: number): boolean {
+        const allObjects = MapObjects.instance.getMapObjects();
+
+        for (const targetNode of allObjects) {
+            if (targetNode.node !== this.player.node) {
+                const distance = Vec3.distance(playerPosition, targetNode.node.worldPosition);
+                if (distance <= attackRadius) {
+                    const resourceController = targetNode; // Убедитесь, что это правильный тип
+                    if (resourceController && resourceController.getResourceHealth() > 0) {
+                        return true; // Найден живой ресурс
+                    }
+                }
+            }
+        }
+        return false; // Живых ресурсов не найдено
     }
 }

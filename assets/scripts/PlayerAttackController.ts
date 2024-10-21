@@ -3,7 +3,9 @@ const { ccclass, property } = _decorator;
 
 @ccclass('PlayerAttackController')
 export class PlayerAttackController extends Component {
-    private weaponLevel = 1;
+    @property
+        private weaponLevel = 1;
+        
     private isAttacking = false;
     private attackCallback: (() => void) | null = null;
 
