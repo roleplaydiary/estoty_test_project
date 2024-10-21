@@ -4,6 +4,7 @@ const { ccclass, property } = _decorator;
 @ccclass('ResourceController')
 export class ResourceController extends Component {
     private resourceLevel: number = 1;
+    private resourceHealth: number = 5;
 
     public resourceAttack(weaponLevel: number){
         if(weaponLevel >= this.resourceLevel) {

@@ -4,13 +4,13 @@ const { ccclass, property } = _decorator;
 @ccclass('AnimationController')
 export class AnimationController extends Component {
     @property(SkeletalAnimation)
-    skeletalAnimation: SkeletalAnimation | null = null; // Ссылка на SkeletalAnimation
+    skeletalAnimation: SkeletalAnimation | null = null;
 
-    private currentAnimation: string = 'Armature.001|Armature.001|IDLE'; // Имя анимации по умолчанию
+    private currentAnimation: string = 'Armature.001|Armature.001|IDLE';
 
     start() {
         if (this.skeletalAnimation) {
-            this.playAnimation(this.currentAnimation); // Запуск анимации по умолчанию
+            this.playAnimation(this.currentAnimation);
         }
     }
 
@@ -18,12 +18,11 @@ export class AnimationController extends Component {
         if (this.skeletalAnimation && this.currentAnimation !== animationName) {
             this.currentAnimation = animationName;
 
-            // Воспроизводим анимацию по имени
             this.skeletalAnimation.play(animationName);
         }
     }
 
     stopAnimation() {
-        // Здесь можно добавить логику для остановки анимации, если это нужно
+        
     }
 }

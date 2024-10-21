@@ -11,31 +11,52 @@ export class PlayerAttackController extends Component {
     @property(AnimationController)
     private animationController: AnimationController | null = null;
 
+    private isAttacking: boolean = false;
+    public get IsAttacking(): boolean {
+        return this.isAttacking;
+    }
+    private mapObjects: ResourceController[] = [];
+
+    protected onLoad(): void {
+        this.mapObjectsInitialize();
+    }
+
+    private mapObjectsInitialize() {
+        MapObjects.instance.getMapObjects().forEach(element => {
+            this.mapObjects.push(element.getComponent(ResourceController));
+        });
+        
+    }
+
     protected start(): void {
+        input.on(Input.EventType.TOUCH_START, this.onTouchStart, this);
         input.on(Input.EventType.TOUCH_END, this.onTouchEnd, this);
     }
 
+    onTouchStart() {
+        this.weaponAttackStop();
+    }
+
     onTouchEnd() {
-        this.weaponAttack();
+        this.weaponAttackStart();
     }
 
     private weaponUpgrade(newWeaponLevel: number) {
         this.weaponLevel = newWeaponLevel;
     }
 
-    private weaponAttack() {
+    public weaponAttackStart() {
         const attackRadius = 2;
         const playerPosition = this.node.worldPosition;
-    
-        const allObjects = MapObjects.instance.getMapObjects();
 
-        allObjects.forEach((targetNode) => {
-            if (targetNode !== this.node) {
-                const distance = Vec3.distance(playerPosition, targetNode.worldPosition);
+        this.mapObjects.forEach((targetNode) => {
+            if (targetNode.node !== this.node) {
+                const distance = Vec3.distance(playerPosition, targetNode.node.worldPosition);
                 if (distance <= attackRadius) {
                     const resourceController = targetNode.getComponent(ResourceController);
 
                     if (resourceController) {
+                        this.isAttacking = true;
                         resourceController.resourceAttack(this.weaponLevel);
                         this.animationController?.playAnimation('Armature.001|Armature.001|AXE');
                     }
@@ -43,7 +64,10 @@ export class PlayerAttackController extends Component {
             }
         });
     }
-    
+
+    public weaponAttackStop() {
+        this.isAttacking = false;
+    }
 }
 
 
