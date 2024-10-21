@@ -5,6 +5,8 @@ import { PlayerState } from './playerState/PlayerState';
 import { IdleState } from './playerState/IdleState';
 import { RunState } from './playerState/RunState';
 import { AttackState } from './playerState/AttackState';
+import { ResourceController } from './ResourceController'; // Импортируем ResourceController
+import { MapObjects } from './MapObjects'; // Импортируем MapObjects
 
 const { ccclass, property } = _decorator;
 
@@ -73,7 +75,32 @@ export class PlayerMovementController extends Component {
     private onTouchEnd(event: EventTouch) {
         this.direction.set(0, 0, 0);
         this.startTouchPosition = null;
-        this.changeState('idle');
+
+        // Проверяем наличие объектов вокруг игрока
+        const targetsInRange = this.checkForTargets();
+        if (targetsInRange.length > 0) {
+            this.changeState('attack'); // Если объекты найдены, переходим в состояние атаки
+        } else {
+            this.changeState('idle'); // Если объектов нет, возвращаемся в состояние ожидания
+        }
+    }
+
+    private checkForTargets(): Node[] {
+        const attackRadius = 2; // Радиус атаки
+        const playerPosition = this.node.worldPosition; // Позиция игрока
+        const allObjects = MapObjects.instance.getMapObjects(); // Получаем все объекты на карте
+        const targetsInRange: Node[] = [];
+
+        allObjects.forEach((targetNode) => {
+            if (targetNode.node !== this.node) {
+                const distance = Vec3.distance(playerPosition, targetNode.node.worldPosition);
+                if (distance <= attackRadius) {
+                    targetsInRange.push(targetNode.node); // Добавляем объекты в диапазоне
+                }
+            }
+        });
+
+        return targetsInRange; // Возвращаем найденные объекты
     }
 
     public rotateCharacter() {

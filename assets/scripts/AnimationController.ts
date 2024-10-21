@@ -4,7 +4,7 @@ const { ccclass, property } = _decorator;
 @ccclass('AnimationController')
 export class AnimationController extends Component {
     @property(SkeletalAnimation)
-    skeletalAnimation: SkeletalAnimation | null = null;
+        skeletalAnimation: SkeletalAnimation | null = null;
 
     private currentAnimation: string = 'Armature.001|Armature.001|IDLE';
 
