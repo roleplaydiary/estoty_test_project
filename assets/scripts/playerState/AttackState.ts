@@ -13,28 +13,24 @@ export class AttackState extends PlayerState {
     }
 
     enter() {
-        this.player.animationController?.playAnimation('Armature.001|Armature.001|AXE'); // Запускаем анимацию
-        this.attackController.startAttack(this.handleAttack.bind(this)); // Передаем функцию для обработки атаки
+        this.player.animationController?.playAnimation('Armature.001|Armature.001|AXE');
+        this.attackController.startAttack(this.handleAttack.bind(this));
     }
 
     update(deltaTime: number) {
         if (!this.attackController.IsAttacking) {
             this.player.changeState('idle');
         }
-
-        if (this.shouldStopAttacking()) {
-            this.player.changeState('idle');
-        }
     }
 
     exit() {
-        this.attackController.stopAttack(); // Останавливаем атаку
+        this.attackController.stopAttack();
     }
 
     private handleAttack() {
         const attackRadius = 2;
         const playerPosition = this.player.node.worldPosition;
-        
+
         const allObjects = MapObjects.instance.getMapObjects();
         let anyDestroyed = false;
 
@@ -53,12 +49,11 @@ export class AttackState extends PlayerState {
             }
         });
 
-        if (anyDestroyed) {
-            this.attackController.stopAttack();
+        if (!anyDestroyed) {
+            // Если остались живые ресурсы, проигрываем анимацию снова
+            this.player.animationController?.playAnimation('Armature.001|Armature.001|AXE');
+        } else {
+            this.attackController.stopAttack(); // Если уничтожены, прекращаем атаку
         }
-    }
-
-    private shouldStopAttacking(): boolean {
-        return false; 
     }
 }

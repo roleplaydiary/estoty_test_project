@@ -1,36 +1,34 @@
-import { _decorator, Component} from 'cc';
+import { _decorator, Component } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerAttackController')
 export class PlayerAttackController extends Component {
     private weaponLevel = 1;
     private isAttacking = false;
-    private attackCooldown = 2.2;
+    private attackCallback: (() => void) | null = null;
 
     public get IsAttacking(): boolean {
         return this.isAttacking;
     }
 
-    public startAttack(attackCallback: () => void) {
+    public startAttack(callback: () => void) {
         if (this.isAttacking) return;
         this.isAttacking = true;
-
-        const attackInterval = setInterval(() => {
-            attackCallback();
-        }, this.attackCooldown * 1000);
-
-        const originalStop = this.stopAttack.bind(this);
-        this.stopAttack = () => {
-            clearInterval(attackInterval);
-            originalStop();
-        };
+        this.attackCallback = callback;
     }
 
     public stopAttack() {
         this.isAttacking = false;
+        this.attackCallback = null; // Сброс колбэка
     }
 
     public getWeaponLevel(): number {
         return this.weaponLevel;
+    }
+
+    public onCharacterHit() {
+        if (this.isAttacking && this.attackCallback) {
+            this.attackCallback(); // Вызываем колбэк, когда срабатывает событие
+        }
     }
 }
