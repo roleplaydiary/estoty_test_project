@@ -1,5 +1,5 @@
-import { _decorator, Component, Node, Vec3, EventTouch, input, Input, Vec2 } from 'cc';
-import { AnimationController } from './AnimationController'; // Импортируем AnimationController
+import { _decorator, Component, Node, Vec3, EventTouch, input, Input, Vec2, PhysicsSystem, geometry, PhysicsRayResult } from 'cc';
+import { AnimationController } from './AnimationController';
 
 const { ccclass, property } = _decorator;
 
@@ -15,6 +15,8 @@ export class PlayerMovementController extends Component {
     private startTouchPosition: Vec3 | null = null; // Начальная позиция касания
     private animationController: AnimationController | null = null; // Ссылка на AnimationController
 
+    private raycastDistance: number = 1.0; // Дистанция для Raycast проверки
+
     start() {
         this.animationController = this.getComponent(AnimationController); // Получаем AnimationController
         if (!this.animationController) {
@@ -28,8 +30,8 @@ export class PlayerMovementController extends Component {
     }
 
     update(deltaTime: number) {
-        // Движение персонажа в направлении касания
-        if (this.direction.length() > 0) {
+        // Если есть направление движения и нет препятствий — двигаемся
+        if (this.direction.length() > 0  && !this.isObstacleInDirection()) {
             let moveOffset = this.direction.clone().normalize().multiplyScalar(this.moveSpeed * deltaTime);
             this.node.setPosition(this.node.position.add(moveOffset));
             this.animationController?.playAnimation('Armature.001|Armature.001|RUN'); // Запускаем анимацию бега
@@ -99,5 +101,29 @@ export class PlayerMovementController extends Component {
             this.node.setRotationFromEuler(0, -angle + correctionAngle, 0);
         }
     }
-    
+
+    // Метод для проверки наличия препятствий с помощью Raycast
+    private isObstacleInDirection(): boolean { // Пока не работает, доделать позже
+        return false;
+        /*
+        const rayStart = this.node.worldPosition;
+        const rayEnd = new Vec3(
+            rayStart.x + this.direction.x * 0.5, 
+            rayStart.y,
+            rayStart.z + this.direction.z * 0.5 
+        );
+
+        const ray = new geometry.Ray(rayStart.x, rayStart.y, rayStart.z, rayEnd.x, rayEnd.y, rayEnd.z);
+        
+        if (PhysicsSystem.instance.raycastClosest(ray)) {
+            const hitResult: PhysicsRayResult = PhysicsSystem.instance.raycastClosestResult;
+            if (hitResult.collider) {
+                // Найден объект с коллайдером
+                return true;
+            }
+        }
+        
+        // Если не нашли коллайдера на пути
+        return false;*/
+    }
 }
