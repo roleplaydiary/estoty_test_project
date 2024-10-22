@@ -33,4 +33,9 @@ export class PlayerAttackController extends Component {
             this.attackCallback();
         }
     }
+
+    public upgradeWeaponLevel() {
+        this.weaponLevel ++;
+        console.log("Weapon has been upgraded to level " + this.weaponLevel);
+    }
 }
