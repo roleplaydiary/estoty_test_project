@@ -20,6 +20,10 @@ export class PlayerUIController extends Component {
         PlayerUIController._instance = this;
     }
 
+    protected start(): void {
+        this.WeaponUpgradeVisibility(false);
+    }
+
     public WeaponUpgradeVisibility(isVisible: boolean) {
         this.weaponUpgradeUI.active = isVisible;
     }
