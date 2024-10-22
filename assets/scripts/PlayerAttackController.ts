@@ -21,7 +21,7 @@ export class PlayerAttackController extends Component {
 
     public stopAttack() {
         this.isAttacking = false;
-        this.attackCallback = null; // Сброс колбэка
+        this.attackCallback = null;
     }
 
     public getWeaponLevel(): number {
@@ -30,7 +30,7 @@ export class PlayerAttackController extends Component {
 
     public onCharacterHit() {
         if (this.isAttacking && this.attackCallback) {
-            this.attackCallback(); // Вызываем колбэк, когда срабатывает событие
+            this.attackCallback();
         }
     }
 }

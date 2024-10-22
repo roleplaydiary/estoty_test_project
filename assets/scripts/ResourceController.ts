@@ -1,14 +1,22 @@
 import { _decorator, Component, Node } from 'cc';
 import { MapObjects } from './MapObjects';
-import { ResourceAnimationController } from './ResourceAnimationController'; // Импортируем новый класс
+import { ResourceAnimationController } from './ResourceAnimationController';
+import { PlayerInventory } from './PlayerInventory';
+import { Resource } from './Resource';
+import { PlayerMovementController } from './PlayerMovementController';
 const { ccclass, property } = _decorator;
+
 
 @ccclass('ResourceController')
 export class ResourceController extends Component {
     @property
         private resourceLevel: number = 1;
+
     @property
         private resourceHealth: number = 5;
+
+    @property({ type: [Resource] })
+        private resources: Resource[] = [];
 
     private animationController: ResourceAnimationController | null = null;
 
@@ -31,8 +39,9 @@ export class ResourceController extends Component {
     }
 
     private resourceDestroy() {
-        console.log("Resource destroyed " + this.name);
-        this.animationController.playDisappearAnimation(this.node);
+        console.log("Resource destroyed " + this.node.name);
+        this.animationController?.playDisappearAnimation(this.node);
+        this.addResourcesToPlayer();
         MapObjects.instance.removeMapObject(this);
     }
 
@@ -42,7 +51,30 @@ export class ResourceController extends Component {
         }
     }
 
-    public getResourceHealth(): number{
+    private addResourcesToPlayer() {
+        const playerInventory = this.getPlayerInventory();
+        if (playerInventory) {
+            this.resources.forEach(resource => {
+                playerInventory.addResource(resource.id, resource.quantity);
+                console.log(`Player получил ресурс ID: ${resource.id}, Количество: ${resource.quantity}`);
+            });
+        }
+    }
+
+    private getPlayerInventory(): PlayerInventory | null {
+        const playerNode = this.getPlayerNode();
+        if (playerNode) {
+            return playerNode.getComponent(PlayerInventory);
+        }
+        return null;
+    }
+
+    private getPlayerNode(): Node | null {
+        const playerNode = PlayerMovementController.instance.node; 
+        return playerNode;
+    }
+
+    public getResourceHealth(): number {
         return this.resourceHealth;
     }
 }

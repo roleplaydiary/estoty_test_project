@@ -18,6 +18,7 @@ export class PlayerInventory extends Component {
 
         if (resource) {
             resource.quantity += quantity;
+            console.log("Player получил ресурс " + resource + " , теперь их общее количество: " + resource.quantity);
         } else {
             this.resources.push(new Resource(id, quantity));
         }

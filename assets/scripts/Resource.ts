@@ -4,10 +4,10 @@ const { ccclass, property } = _decorator;
 @ccclass('Resource')
 export class Resource {
     @property
-    public id: number;
+    public id = 0;
 
     @property
-    public quantity: number;
+    public quantity = 0;
 
     constructor(id: number, quantity: number) {
         this.id = id;

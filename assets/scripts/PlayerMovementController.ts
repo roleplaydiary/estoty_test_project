@@ -5,24 +5,37 @@ import { PlayerState } from './playerState/PlayerState';
 import { IdleState } from './playerState/IdleState';
 import { RunState } from './playerState/RunState';
 import { AttackState } from './playerState/AttackState';
-import { ResourceController } from './ResourceController'; // Импортируем ResourceController
-import { MapObjects } from './MapObjects'; // Импортируем MapObjects
+import { MapObjects } from './MapObjects';
 
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerMovementController')
 export class PlayerMovementController extends Component {
+    private static _instance: PlayerMovementController;
+    
     @property(Node)
-    cameraNode: Node | null = null;
+        cameraNode: Node | null = null;
 
     @property
-    moveSpeed: number = 10;
+        moveSpeed: number = 10;
 
     public direction: Vec3 = new Vec3(0, 0, 0);
     private startTouchPosition: Vec3 | null = null;
     public animationController: AnimationController | null = null;
     private currentState: PlayerState | null = null;
     private playerAttackController: PlayerAttackController | null = null;
+
+    public static get instance(): PlayerMovementController {
+        return this._instance;
+    }
+
+    onLoad() {
+        if (PlayerMovementController._instance) {
+            console.error("Multiple instances of PlayerMovementController detected!");
+            return;
+        }
+        PlayerMovementController._instance = this;
+    }
 
     start() {
         this.animationController = this.getComponent(AnimationController);
@@ -132,6 +145,12 @@ export class PlayerMovementController extends Component {
                 );
                 this.direction.normalize();
             }
+        }
+    }
+
+    onDestroy() {
+        if (PlayerMovementController._instance === this) {
+            PlayerMovementController._instance = null;
         }
     }
 }
