@@ -86,7 +86,7 @@ export class PlayerMovementController extends Component {
     }
 
     private checkForTargets(): Node[] {
-        const attackRadius = 2; // Радиус атаки
+        const attackRadius = 1.5; // Радиус атаки
         const playerPosition = this.node.worldPosition; // Позиция игрока
         const allObjects = MapObjects.instance.getMapObjects(); // Получаем все объекты на карте
         const targetsInRange: Node[] = [];

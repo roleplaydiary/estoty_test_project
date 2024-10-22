@@ -28,7 +28,7 @@ export class AttackState extends PlayerState {
     }
 
     private handleAttack() {
-        const attackRadius = 2;
+        const attackRadius = 1.5;
         const playerPosition = this.player.node.worldPosition;
 
         // Наносим урон всем ресурсам в радиусе атаки
@@ -56,18 +56,18 @@ export class AttackState extends PlayerState {
             if (targetNode.node !== this.player.node) {
                 const distance = Vec3.distance(playerPosition, targetNode.node.worldPosition);
                 if (distance <= attackRadius) {
-                    const resourceController = targetNode; // Убедитесь, что это правильный тип
+                    const resourceController = targetNode;
                     if (resourceController) {
                         const isDestroyed = resourceController.resourceAttack(this.attackController.getWeaponLevel());
                         if (isDestroyed) {
-                            anyDestroyed = true; // Если хотя бы один ресурс уничтожен
+                            anyDestroyed = true;
                         }
                     }
                 }
             }
         }
 
-        return anyDestroyed; // Возвращаем, был ли разрушен хотя бы один ресурс
+        return anyDestroyed;
     }
 
     private hasAliveTargets(playerPosition: Vec3, attackRadius: number): boolean {
@@ -77,13 +77,13 @@ export class AttackState extends PlayerState {
             if (targetNode.node !== this.player.node) {
                 const distance = Vec3.distance(playerPosition, targetNode.node.worldPosition);
                 if (distance <= attackRadius) {
-                    const resourceController = targetNode; // Убедитесь, что это правильный тип
+                    const resourceController = targetNode;
                     if (resourceController && resourceController.getResourceHealth() > 0) {
-                        return true; // Найден живой ресурс
+                        return true;
                     }
                 }
             }
         }
-        return false; // Живых ресурсов не найдено
+        return false;
     }
 }
