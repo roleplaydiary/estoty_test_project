@@ -1,62 +1,70 @@
-import { _decorator, Component, Node, Vec2, UITransform, EventTouch, input, Input } from 'cc';
+import { _decorator, Component, Node, Vec2, UITransform, EventTouch, input, Input, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('JoystickUI')
 export class JoystickUI extends Component {
     @property(Node)
-    joystickArea: Node | null = null; // Площадь нажатия
+        joystickArea: Node | null = null;
 
     @property(Node)
-    joystick: Node | null = null; // Сам джойстик
+        joystick: Node | null = null;
 
-    private startTouchPos: Vec2 = new Vec2(); // Стартовая позиция нажатия
-    private maxJoystickDistance: number = 100; // Максимальное расстояние движения джойстика
+    private startTouchPos: Vec2 = new Vec2();
+    private maxJoystickDistance: number = 500;
+
+    @property
+        private sensitivity: number = 1.5;
 
     start() {
-        // Подписываемся на события касания
         input.on(Input.EventType.TOUCH_START, this.onTouchStart, this);
         input.on(Input.EventType.TOUCH_MOVE, this.onTouchMove, this);
         input.on(Input.EventType.TOUCH_END, this.onTouchEnd, this);
 
-        // Скрываем джойстик в начале
-        //this.resetJoystick();
+        this.resetJoystick();
     }
 
     onTouchStart(event: EventTouch) {
-        // Получаем начальную позицию касания
         const touchPos = event.getUILocation();
-        this.startTouchPos.set(touchPos.x, touchPos.y);
+        
+        // Преобразование координат касания в локальные координаты родителя джойстика
+        const parentTransform = this.node.getComponent(UITransform);
+        if (parentTransform) {
+            const localPos = parentTransform.convertToNodeSpaceAR(new Vec3(touchPos.x, touchPos.y, 0));
+            this.startTouchPos.set(localPos.x, localPos.y);
 
-        // Устанавливаем позиции для области и самого джойстика
-        this.joystickArea?.setPosition(touchPos.x, touchPos.y);
-        this.joystick?.setPosition(touchPos.x, touchPos.y);
+            // Устанавливаем позицию джойстик зоны
+            this.joystickArea?.setPosition(localPos.x, localPos.y);
+            // Устанавливаем начальную позицию джойстика на центр зоны
+            this.joystick?.setPosition(Vec3.ZERO); // Начальная позиция джойстика — это центр зоны
+        }
 
-        // Отображаем область и джойстик
         this.joystickArea.active = true;
         this.joystick.active = true;
     }
 
     onTouchMove(event: EventTouch) {
-        // Обновляем позицию джойстика в зависимости от перемещения пальца
         const touchPos = event.getUILocation();
-        const delta = new Vec2(touchPos.x - this.startTouchPos.x, touchPos.y - this.startTouchPos.y);
+        const parentTransform = this.node.getComponent(UITransform);
+        if (parentTransform) {
+            const localPos = parentTransform.convertToNodeSpaceAR(new Vec3(touchPos.x, touchPos.y, 0));
+            const delta = new Vec2(localPos.x - this.startTouchPos.x, localPos.y - this.startTouchPos.y);
 
-        // Ограничиваем движение джойстика в радиусе maxJoystickDistance
-        if (delta.length() > this.maxJoystickDistance) {
-            delta.normalize().multiplyScalar(this.maxJoystickDistance);
+            delta.multiplyScalar(this.sensitivity);
+
+            if (delta.length() > this.maxJoystickDistance) {
+                delta.normalize().multiplyScalar(this.maxJoystickDistance);
+            }
+
+            // Устанавливаем смещенную позицию джойстика относительно его начального положения (центра зоны)
+            this.joystick?.setPosition(delta.x, delta.y);
         }
-
-        // Устанавливаем новую позицию джойстика
-        this.joystick?.setPosition(this.startTouchPos.x + delta.x, this.startTouchPos.y + delta.y);
     }
 
     onTouchEnd() {
-        // Сбрасываем джойстик при завершении касания
         this.resetJoystick();
     }
 
     private resetJoystick() {
-        // Скрываем джойстик и область
         this.joystickArea.active = false;
         this.joystick.active = false;
     }
